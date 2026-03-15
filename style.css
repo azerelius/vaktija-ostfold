@@ -1,0 +1,34 @@
+body{
+font-family: system-ui;
+background:#0f3d2e;
+color:#f5f3e7;
+text-align:center;
+padding:20px;
+}
+
+h1{
+color:#d4af37;
+}
+
+.prayer{
+background:#145c43;
+padding:15px;
+margin:10px;
+border-radius:10px;
+font-size:20px;
+}
+
+.active{
+background:#1e7a59;
+border:2px solid #d4af37;
+}
+
+button{
+margin-top:20px;
+padding:12px;
+font-size:18px;
+background:#1e7a59;
+border:none;
+color:white;
+border-radius:8px;
+}
