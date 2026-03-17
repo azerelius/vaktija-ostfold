@@ -1,114 +1,73 @@
-<link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
 <!DOCTYPE html>
 <html lang="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vaktija Østfold 2026</title>
+
+<title>Vaktija Østfold</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
 
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(to bottom, #0B6E4F, #F4F7F5);
   margin: 0;
-  color: #1a1a1a;
 }
 
 header {
-  padding: 30px 20px 20px;
-  color: white;
+  padding: 30px 20px;
   text-align: center;
+  color: white;
 }
 
 h1 {
   margin: 0;
-  font-size: 28px;
-}
-
-.subtitle {
-  font-size: 14px;
-  opacity: 0.8;
-}
-
-.date-picker {
-  margin-top: 10px;
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
 }
 
 .container {
   background: #F4F7F5;
   border-radius: 25px 25px 0 0;
   padding: 20px;
-  margin-top: 20px;
   min-height: 80vh;
 }
 
-.nav-buttons {
+.nav {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 button {
-  padding: 10px 15px;
+  padding: 10px;
   border: none;
   border-radius: 10px;
   background: #0B6E4F;
   color: white;
-  font-weight: bold;
 }
 
 .prayer {
   display: flex;
   justify-content: space-between;
+  background: white;
   padding: 15px;
   margin: 8px 0;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.prayer-name {
-  font-weight: 500;
-  font-family: 'Amiri', serif;
-  font-size: 18px;
-}
-
-.prayer-time {
-  font-weight: bold;
+  border-radius: 12px;
 }
 
 .next {
-  background: linear-gradient(to right, #0B6E4F, #0f8a61);
+  background: #0B6E4F;
   color: white;
 }
 
-.countdown-box {
-  margin-top: 25px;
-  padding: 20px;
-  border-radius: 20px;
-  background: white;
+.prayer-name {
+  font-family: 'Amiri', serif;
+}
+
+.countdown {
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.countdown-title {
-  font-size: 14px;
-  color: #666;
-}
-
-.countdown-time {
-  font-size: 32px;
-  font-weight: bold;
-  color: #0B6E4F;
-  margin-top: 5px;
-}
-
-.mosque-icon {
-  font-size: 32px;
-  margin-bottom: 5px;
+  margin-top: 20px;
+  font-size: 24px;
 }
 </style>
 </head>
@@ -116,171 +75,143 @@ button {
 <body>
 
 <header>
-  <div class="mosque-icon">🕌</div>
-  <h1>Vaktija Østfold</h1>
-  <div class="subtitle">Bønnetider 2026</div>
-  <input class="date-picker" type="date" id="datePicker">
+  <h1>🕌 Vaktija Østfold</h1>
+  <input type="date" id="datePicker">
 </header>
 
 <div class="container">
 
-<div class="nav-buttons">
-  <button onclick="prevDay()">← I går</button>
-  <button onclick="nextDay()">I morgen →</button>
+<div class="nav">
+  <button onclick="prevDay()">⬅️</button>
+  <button onclick="nextDay()">➡️</button>
 </div>
 
 <div id="prayers"></div>
 
-<div class="countdown" id="countdown"></div>
+<div id="countdown" class="countdown"></div>
 
 </div>
 
 <script>
 
-let prayerData = []
+let rows = []
 
-fetch("vaktija_ostfold_2026.csv")
+fetch("vaktija.csv")
 .then(res => res.text())
 .then(text => {
-  const rows = text.split("\n").slice(1)
-  const selectedDate = document.getElementById("datePicker").value
 
-const row = rows.find(r => r.startsWith(selectedDate))
-  if(!row){
-  document.getElementById("prayers").innerText = "Ingen data"
-  return
-}
+  rows = text.split("\n").slice(1)
 
-const cols = row.split(",")
-
-const data = {
-  Fajr: cols[1],
-  Dhuhr: cols[2],
-  Asr: cols[3],
-  Maghrib: cols[4],
-  Isha: cols[5]
-}
-
-  prayerData = rows.map(row => {
-    const [date,fajr,dhuhr,asr,maghrib,isha] = row.split(",")
-    return {date,fajr,dhuhr,asr,maghrib,isha}
-  })
-
-  init()
-})
-
-function init(){
   const today = new Date().toISOString().split("T")[0]
   document.getElementById("datePicker").value = today
-  showPrayers(today)
-}
 
-function showPrayers(date){
+  loadDay()
 
-  const day = prayerData.find(d => d.date === date)
-  if(!day){
-    document.getElementById("prayers").innerHTML = "Ingen data"
+})
+
+function loadDay(){
+
+  const selectedDate = document.getElementById("datePicker").value
+
+  const formattedDate = selectedDate.split("-").reverse().join(".")
+
+  const line = rows.find(r => r.includes(formattedDate))
+
+  if(!line){
+    document.getElementById("prayers").innerText = "Ingen data"
     return
   }
 
+  let cols = line.split(";")
+  if(cols.length < 5){
+    cols = line.split(",")
+  }
+
   const prayers = [
-  { name: "Sabah / Fajr", time: data.Fajr },
-  { name: "Podne / Dhuhr", time: data.Dhuhr },
-  { name: "Ikindija / Asr", time: data.Asr },
-  { name: "Akšam / Maghrib", time: data.Maghrib },
-  { name: "Jacija / Isha", time: data.Isha }
-]
-
-  const next = getNextPrayer(prayers)
-
-  document.getElementById("prayers").innerHTML =
-  prayers.map(p => `
-    <div class="prayer ${p.name === next.name ? "next" : ""}">
-      <span class="prayer-name">${p.name}</span>
-      <span class="prayer-time">${p.time}</span>
-    </div>
-  `).join("")
-
-  startCountdown(next.time)
-}
-
-function getNextPrayer(prayers){
+    { name: "Sabah / Fajr", time: cols[1] },
+    { name: "Podne / Dhuhr", time: cols[2] },
+    { name: "Ikindija / Asr", time: cols[3] },
+    { name: "Akšam / Maghrib", time: cols[4] },
+    { name: "Jacija / Isha", time: cols[5] }
+  ]
 
   const now = new Date()
 
-  for(let p of prayers){
+  let nextPrayer = null
 
+  for(let p of prayers){
     const [h,m] = p.time.split(":")
     const t = new Date()
-    t.setHours(h)
-    t.setMinutes(m)
+    t.setHours(h, m, 0)
 
     if(t > now){
-      return p
+      nextPrayer = p
+      break
     }
   }
 
-  return prayers[0]
+  if(!nextPrayer){
+    nextPrayer = prayers[0]
+  }
+
+  document.getElementById("prayers").innerHTML =
+    prayers.map(p => `
+      <div class="prayer ${p.name === nextPrayer.name ? "next" : ""}">
+        <span class="prayer-name">${p.name}</span>
+        <span>${p.time}</span>
+      </div>
+    `).join("")
+
+  startCountdown(nextPrayer.time)
 }
 
-let countdownInterval;
+let interval
 
 function startCountdown(time){
 
-  // stopp gammel timer (VIKTIG!)
-  if(countdownInterval){
-    clearInterval(countdownInterval)
+  if(interval){
+    clearInterval(interval)
   }
 
-  countdownInterval = setInterval(() => {
+  interval = setInterval(() => {
 
     const now = new Date()
     const [h,m] = time.split(":")
 
     let target = new Date()
-    target.setHours(h)
-    target.setMinutes(m)
-    target.setSeconds(0)
+    target.setHours(h,m,0)
 
-    // Hvis tiden allerede er passert → legg til 1 dag
     if(target <= now){
-      target.setDate(target.getDate() + 1)
+      target.setDate(target.getDate()+1)
     }
 
     const diff = target - now
 
-    const hDiff = Math.floor(diff / 3600000)
-    const mDiff = Math.floor((diff % 3600000) / 60000)
-    const sDiff = Math.floor((diff % 60000) / 1000)
+    const hDiff = Math.floor(diff/3600000)
+    const mDiff = Math.floor((diff%3600000)/60000)
+    const sDiff = Math.floor((diff%60000)/1000)
 
-    document.getElementById("countdown").innerHTML =
-  `<div class="countdown-box">
-     <div class="countdown-title">Neste bønn om</div>
-     <div class="countdown-time">${hDiff}:${mDiff}:${sDiff}</div>
-   </div>`;
+    document.getElementById("countdown").innerText =
+      `Neste bønn om ${hDiff}:${mDiff}:${sDiff}`
 
   },1000)
 }
 
-document.getElementById("datePicker").addEventListener("change",(e)=>{
-  showPrayers(e.target.value)
-})
+function prevDay(){
+  const d = new Date(document.getElementById("datePicker").value)
+  d.setDate(d.getDate()-1)
+  document.getElementById("datePicker").value = d.toISOString().split("T")[0]
+  loadDay()
+}
 
 function nextDay(){
-  const input = document.getElementById("datePicker")
-  const d = new Date(input.value)
+  const d = new Date(document.getElementById("datePicker").value)
   d.setDate(d.getDate()+1)
-  input.value = d.toISOString().split("T")[0]
-  showPrayers(input.value)
+  document.getElementById("datePicker").value = d.toISOString().split("T")[0]
+  loadDay()
 }
 
-function prevDay(){
-  const input = document.getElementById("datePicker")
-  const d = new Date(input.value)
-  d.setDate(d.getDate()-1)
-  input.value = d.toISOString().split("T")[0]
-  showPrayers(input.value)
-}
+document.getElementById("datePicker").addEventListener("change", loadDay)
 
 </script>
 
