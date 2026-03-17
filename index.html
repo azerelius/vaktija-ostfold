@@ -149,21 +149,35 @@ function getNextPrayer(prayers){
   return prayers[0]
 }
 
+let countdownInterval;
+
 function startCountdown(time){
 
-  setInterval(() => {
+  // stopp gammel timer (VIKTIG!)
+  if(countdownInterval){
+    clearInterval(countdownInterval)
+  }
+
+  countdownInterval = setInterval(() => {
 
     const now = new Date()
     const [h,m] = time.split(":")
-    const target = new Date()
+
+    let target = new Date()
     target.setHours(h)
     target.setMinutes(m)
+    target.setSeconds(0)
+
+    // Hvis tiden allerede er passert → legg til 1 dag
+    if(target <= now){
+      target.setDate(target.getDate() + 1)
+    }
 
     const diff = target - now
 
-    const hDiff = Math.floor(diff/3600000)
-    const mDiff = Math.floor((diff%3600000)/60000)
-    const sDiff = Math.floor((diff%60000)/1000)
+    const hDiff = Math.floor(diff / 3600000)
+    const mDiff = Math.floor((diff % 3600000) / 60000)
+    const sDiff = Math.floor((diff % 60000) / 1000)
 
     document.getElementById("countdown").innerText =
       `Neste bønn om ${hDiff}:${mDiff}:${sDiff}`
