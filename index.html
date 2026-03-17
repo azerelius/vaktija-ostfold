@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vaktija Østfold 2026</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f7f5;
+  text-align: center;
+  margin: 0;
+}
+
+header {
+  background: #0B6E4F;
+  color: white;
+  padding: 20px;
+}
+
+h1 {
+  margin: 0;
+}
+
+.container {
+  padding: 20px;
+}
+
+.prayer {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  margin: 5px 0;
+  background: white;
+  border-radius: 10px;
+}
+
+.next {
+  background: #0B6E4F;
+  color: white;
+}
+
+button {
+  padding: 10px;
+  margin: 5px;
+  border: none;
+  border-radius: 8px;
+  background: #0B6E4F;
+  color: white;
+}
+
+.countdown {
+  font-size: 28px;
+  margin-top: 20px;
+  color: #0B6E4F;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🕌 Vaktija Østfold</h1>
+  <input type="date" id="datePicker">
+</header>
+
+<div class="container">
+
+<div>
+  <button onclick="prevDay()">← I går</button>
+  <button onclick="nextDay()">I morgen →</button>
+</div>
+
+<div id="prayers"></div>
+
+<div class="countdown" id="countdown"></div>
+
+</div>
+
+<script>
+
+let prayerData = []
+
+fetch("vaktija_ostfold_2026.csv")
+.then(res => res.text())
+.then(text => {
+  const rows = text.split("\n").slice(1)
+
+  prayerData = rows.map(row => {
+    const [date,fajr,dhuhr,asr,maghrib,isha] = row.split(",")
+    return {date,fajr,dhuhr,asr,maghrib,isha}
+  })
+
+  init()
+})
+
+function init(){
+  const today = new Date().toISOString().split("T")[0]
+  document.getElementById("datePicker").value = today
+  showPrayers(today)
+}
+
+function showPrayers(date){
+
+  const day = prayerData.find(d => d.date === date)
+  if(!day){
+    document.getElementById("prayers").innerHTML = "Ingen data"
+    return
+  }
+
+  const prayers = [
+    {name:"Sabah (Fajr)", time:day.fajr},
+    {name:"Podne (Dhuhr)", time:day.dhuhr},
+    {name:"Ikindija (Asr)", time:day.asr},
+    {name:"Akšam (Maghrib)", time:day.maghrib},
+    {name:"Jacija (Isha)", time:day.isha}
+  ]
+
+  const next = getNextPrayer(prayers)
+
+  document.getElementById("prayers").innerHTML =
+    prayers.map(p => `
+      <div class="prayer ${p.name === next.name ? "next" : ""}">
+        <span>${p.name}</span>
+        <span>${p.time}</span>
+      </div>
+    `).join("")
+
+  startCountdown(next.time)
+}
+
+function getNextPrayer(prayers){
+
+  const now = new Date()
+
+  for(let p of prayers){
+
+    const [h,m] = p.time.split(":")
+    const t = new Date()
+    t.setHours(h)
+    t.setMinutes(m)
+
+    if(t > now){
+      return p
+    }
+  }
+
+  return prayers[0]
+}
+
+function startCountdown(time){
+
+  setInterval(() => {
+
+    const now = new Date()
+    const [h,m] = time.split(":")
+    const target = new Date()
+    target.setHours(h)
+    target.setMinutes(m)
+
+    const diff = target - now
+
+    const hDiff = Math.floor(diff/3600000)
+    const mDiff = Math.floor((diff%3600000)/60000)
+    const sDiff = Math.floor((diff%60000)/1000)
+
+    document.getElementById("countdown").innerText =
+      `Neste bønn om ${hDiff}:${mDiff}:${sDiff}`
+
+  },1000)
+}
+
+document.getElementById("datePicker").addEventListener("change",(e)=>{
+  showPrayers(e.target.value)
+})
+
+function nextDay(){
+  const input = document.getElementById("datePicker")
+  const d = new Date(input.value)
+  d.setDate(d.getDate()+1)
+  input.value = d.toISOString().split("T")[0]
+  showPrayers(input.value)
+}
+
+function prevDay(){
+  const input = document.getElementById("datePicker")
+  const d = new Date(input.value)
+  d.setDate(d.getDate()-1)
+  input.value = d.toISOString().split("T")[0]
+  showPrayers(input.value)
+}
+
+</script>
+
+</body>
+</html>
