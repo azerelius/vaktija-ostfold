@@ -143,6 +143,23 @@ fetch("vaktija_ostfold_2026.csv")
 .then(res => res.text())
 .then(text => {
   const rows = text.split("\n").slice(1)
+  const selectedDate = document.getElementById("datePicker").value
+
+const row = rows.find(r => r.startsWith(selectedDate))
+  if(!row){
+  document.getElementById("prayers").innerText = "Ingen data"
+  return
+}
+
+const cols = row.split(",")
+
+const data = {
+  Fajr: cols[1],
+  Dhuhr: cols[2],
+  Asr: cols[3],
+  Maghrib: cols[4],
+  Isha: cols[5]
+}
 
   prayerData = rows.map(row => {
     const [date,fajr,dhuhr,asr,maghrib,isha] = row.split(",")
@@ -167,11 +184,11 @@ function showPrayers(date){
   }
 
   const prayers = [
-  { name: "Sabah / Fajr", time: row.Fajr },
-  { name: "Podne / Dhuhr", time: row.Dhuhr },
-  { name: "Ikindija / Asr", time: row.Asr },
-  { name: "Akšam / Maghrib", time: row.Maghrib },
-  { name: "Jacija / Isha", time: row.Isha }
+  { name: "Sabah / Fajr", time: data.Fajr },
+  { name: "Podne / Dhuhr", time: data.Dhuhr },
+  { name: "Ikindija / Asr", time: data.Asr },
+  { name: "Akšam / Maghrib", time: data.Maghrib },
+  { name: "Jacija / Isha", time: data.Isha }
 ]
 
   const next = getNextPrayer(prayers)
