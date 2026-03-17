@@ -179,8 +179,9 @@ function startCountdown(time){
     const mDiff = Math.floor((diff % 3600000) / 60000)
     const sDiff = Math.floor((diff % 60000) / 1000)
 
-    document.getElementById("countdown").innerText =
-      `Neste bønn om ${hDiff}:${mDiff}:${sDiff}`
+    document.getElementById("countdown").innerHTML =
+  `<div style="font-size:16px;">Neste bønn om</div>
+   <div style="font-size:28px; font-weight:bold;">${hDiff}:${mDiff}:${sDiff}</div>`;
 
   },1000)
 }
