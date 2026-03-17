@@ -174,12 +174,12 @@ function showPrayers(date){
   const next = getNextPrayer(prayers)
 
   document.getElementById("prayers").innerHTML =
-    prayers.map(p => `
-      <div class="prayer ${p.name === next.name ? "next" : ""}">
-        <span>${p.name}</span>
-        <span>${p.time}</span>
-      </div>
-    `).join("")
+  prayers.map(p => `
+    <div class="prayer ${p.name === next.name ? "next" : ""}">
+      <span class="prayer-name">${p.name}</span>
+      <span class="prayer-time">${p.time}</span>
+    </div>
+  `).join("")
 
   startCountdown(next.time)
 }
